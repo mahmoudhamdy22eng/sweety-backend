@@ -2,25 +2,63 @@
 
 namespace App\Providers;
 
-// use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
+use Laravel\Passport\Passport;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * The model to policy mappings for the application.
-     *
-     * @var array<class-string, class-string>
-     */
-    protected $policies = [
-        //
-    ];
+        // public function boot()
+        // {
+        //     $this->registerPolicies();
 
-    /**
-     * Register any authentication / authorization services.
-     */
-    public function boot(): void
+        //     Passport::routes();
+        //     // Additional configurations if needed
+        // }
+
+
+        public function boot()
     {
-        //
+        $this->registerPolicies();
+
+        if (!$this->app->routesAreCached()) {
+            Passport::routes(function ($router) {
+                Route::group(['middleware' => 'api'], function ($router) {
+                    $router->get('/oauth/tokens', [
+                        'as' => 'passport.tokens.index',
+                        'uses' => '\\Laravel\\Passport\\Http\\Controllers\\AuthorizedAccessTokenController@forUser',
+                    ]);
+                    $router->delete('/oauth/tokens/{token_id}', [
+                        'as' => 'passport.tokens.destroy',
+                        'uses' => '\\Laravel\\Passport\\Http\\Controllers\\AuthorizedAccessTokenController@destroy',
+                    ]);
+                });
+            });
+        }
     }
 }
+
+
+
+
+
+
+// public function boot()
+//     {
+//         $this->registerPolicies();
+
+//         if (!$this->app->routesAreCached()) {
+//             Passport::routes(function ($router) {
+//                 Route::group(['middleware' => 'api'], function ($router) {
+//                     $router->get('/oauth/tokens', [
+//                         'as' => 'passport.tokens.index',
+//                         'uses' => '\\Laravel\\Passport\\Http\\Controllers\\AuthorizedAccessTokenController@forUser',
+//                     ]);
+//                     $router->delete('/oauth/tokens/{token_id}', [
+//                         'as' => 'passport.tokens.destroy',
+//                         'uses' => '\\Laravel\\Passport\\Http\\Controllers\\AuthorizedAccessTokenController@destroy',
+//                     ]);
+//                 });
+//             });
+//         }
+//     }
