@@ -8,7 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-
+use App\Http\Controllers\Auth\VerificationController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -47,13 +47,22 @@ Route::middleware('auth:api')->group(function () {
 
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
-// Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
-//                                                                         ->name('verification.verify');
-// Route::post('/email/resend', [VerificationController::class, 'resend'])->name('verification.resend');
-
+Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify');
+Route::post('/email/resend', [VerificationController::class, 'resend'])->name('verification.resend');
 // Ensure API routes are protected
 Route::middleware('auth:api')->group(function () {
     Route::apiResource('/products', ProductController::class);
     Route::apiResource('/productcategories', ProductCategoryController::class);
 });
+
+
+// Protect admin routes with both auth and admin middleware
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/manage-products', [ProductController::class, 'index']);
+    Route::post('/newproduct', [ProductController::class, 'store']);
+    Route::put('/updateproduct/{id}', [ProductController::class, 'update']);
+    Route::delete('/deleteproduct/{id}', [ProductController::class, 'destroy']);
+    // Add other admin routes here
+});
+
 

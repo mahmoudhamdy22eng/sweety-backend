@@ -13,4 +13,9 @@ class Product extends Model
         'name', 'description', 'price',  'QuantityAvailable', 'CategoryID', 'AdminID',
         'IsCustomizable', 'HasNutritionalInfo', 'image', 'vendor', 'is_deleted'
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(ProductCategory::class, 'CategoryID', 'CategoryID');
+    }
 }

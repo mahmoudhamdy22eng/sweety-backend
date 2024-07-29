@@ -3,30 +3,20 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\VerifiesEmails;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
 class VerificationController extends Controller
 {
-    use VerifiesEmails;
-
     /**
      * Mark the authenticated user's email address as verified.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Foundation\Auth\EmailVerificationRequest  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function verify(Request $request)
+    public function verify(EmailVerificationRequest $request)
     {
-        $user = User::findOrFail($request->route('id'));
-
-        if ($user->hasVerifiedEmail()) {
-            return response()->json(['message' => 'Email already verified.'], 400);
-        }
-
-        if ($user->markEmailAsVerified()) {
-            event(new Verified($user));
-        }
+        $request->fulfill();
 
         return response()->json(['message' => 'Email successfully verified.'], 200);
     }
@@ -48,4 +38,3 @@ class VerificationController extends Controller
         return response()->json(['message' => 'Verification email resent.'], 200);
     }
 }
-

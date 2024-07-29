@@ -9,14 +9,60 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::all();
+        $products = Product::with('category')->get();
 
         if ($products->isEmpty()) {
             return response()->json(['status' => false, 'message' => 'No products found'], 404);
         }
 
+        $products = $products->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'price' => $product->price,
+                'QuantityAvailable' => $product->QuantityAvailable,
+                'CategoryID' => $product->CategoryID,
+                'CategoryName' => $product->category->CategoryName,
+                'AdminID' => $product->AdminID,
+                'IsCustomizable' => $product->IsCustomizable,
+                'HasNutritionalInfo' => $product->HasNutritionalInfo,
+                'image' => $product->image,
+                'vendor' => $product->vendor,
+                'is_deleted' => $product->is_deleted
+            ];
+        });
+
         return response()->json($products, 200);
     }
+
+
+    public function show($id)
+    {
+        $product = Product::with('category')->find($id);
+
+        if ($product) {
+            return response()->json([
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'price' => $product->price,
+                'QuantityAvailable' => $product->QuantityAvailable,
+                'CategoryID' => $product->CategoryID,
+                'CategoryName' => $product->category->CategoryName,
+                'AdminID' => $product->AdminID,
+                'IsCustomizable' => $product->IsCustomizable,
+                'HasNutritionalInfo' => $product->HasNutritionalInfo,
+                'image' => $product->image,
+                'vendor' => $product->vendor,
+                'is_deleted' => $product->is_deleted
+            ], 200);
+        } else {
+            return response()->json(['status' => false, 'message' => 'Product not found'], 404);
+        }
+    }
+
+
 
     public function store(Request $request)
     {
@@ -35,15 +81,6 @@ class ProductController extends Controller
         }
     }
 
-    public function show($id)
-    {
-        $product = Product::find($id);
-
-        if ($product) {
-            return response()->json($product, 200);
-        } else {
-            return response()->json(['status' => false, 'message' => 'Product not found'], 404);
-        }
-    }
+    
 
 }

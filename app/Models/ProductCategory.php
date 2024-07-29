@@ -14,4 +14,9 @@ class ProductCategory extends Model
     protected $table = 'productcategories';
 
     protected $primaryKey = 'CategoryID';
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'CategoryID', 'CategoryID');
+    }
 }
