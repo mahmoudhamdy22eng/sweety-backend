@@ -65,10 +65,44 @@ class ProductController extends Controller
 
 
     public function store(Request $request)
-    {
-        $product = Product::create($request->all());
-        return response()->json($product, 201);
+{
+    // Validate incoming request
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'price' => 'required|numeric',
+        'QuantityAvailable' => 'required|integer',
+        'CategoryID' => 'required|integer',
+        'AdminID' => 'required|integer',
+        'IsCustomizable' => 'required|boolean',
+        'HasNutritionalInfo' => 'required|boolean',
+        'vendor' => 'required|string|max:255',
+        'image' => 'nullable|file|image|max:2048' // Validate image file
+    ]);
+
+    $product = new Product();
+    $product->name = $request->name;
+    $product->description = $request->description;
+    $product->price = $request->price;
+    $product->QuantityAvailable = $request->QuantityAvailable;
+    $product->CategoryID = $request->CategoryID;
+    $product->AdminID = $request->AdminID;
+    $product->IsCustomizable = $request->IsCustomizable;
+    $product->HasNutritionalInfo = $request->HasNutritionalInfo;
+    $product->vendor = $request->vendor;
+    $product->is_deleted = false;
+
+    if ($request->hasFile('image')) {
+        // Store the uploaded image in the 'public/images/dashboard/products/sweets' directory
+        $path = $request->file('image')->store('dashboard/products/sweets', 'public');
+        $product->image = $path;
     }
+
+    $product->save();
+
+    return response()->json($product, 201);
+}
+
 
     public function update(Request $request, $id)
     {
