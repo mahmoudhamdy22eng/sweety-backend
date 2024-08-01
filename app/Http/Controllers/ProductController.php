@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log; // Add this line
+
 
 class ProductController extends Controller
 {
@@ -66,6 +68,9 @@ class ProductController extends Controller
 
     public function store(Request $request)
 {
+     // Log the incoming request data
+    Log::info('Incoming request data:', $request->all());
+    
     // Validate incoming request
     $request->validate([
         'name' => 'required|string|max:255',
@@ -104,17 +109,72 @@ class ProductController extends Controller
 }
 
 
-    public function update(Request $request, $id)
-    {
-        $product = Product::find($id);
-        if ($product) {
-            $product->update($request->all());
-            return response()->json(['status' => true, 'message' => 'Product updated successfully']);
-        } else {
-            return response()->json(['status' => false, 'message' => 'Product not found'], 404);
-        }
-    }
-
+public function update(Request $request, $id)
+{
+    // Log the incoming request data
+    // Log::info('Incoming request data:', $request->all()); 
+    // var_dump($request->all());
     
+    $product = Product::find($id);
+    if (!$product) {
+        return response()->json(['status' => false, 'message' => 'Product not found'], 404);
+    }
+    
+    // echo $product;
+    // echo $request->name;
+    // echo $request->description;
+    // echo $request->price;
+    // echo $request->QuantityAvailable;
+    // echo $request->CategoryID;
+    // echo $request->AdminID;
+    // echo $request->IsCustomizable;
+    // echo $request->HasNutritionalInfo;
+    // echo $request->vendor;
+    // echo "\n test";
+    try {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric',
+            'QuantityAvailable' => 'required|integer',
+            'CategoryID' => 'required|integer',
+            'AdminID' => 'required|integer',
+            'IsCustomizable' => 'required|boolean',
+            'HasNutritionalInfo' => 'required|boolean',
+            'vendor' => 'required|string|max:255',
+            'image' => 'nullable|file|image|max:2048' // Validate image file
+        ]);
+
+        $product->name = $request->name;
+        $product->description = $request->description;
+        $product->price = $request->price;
+        $product->QuantityAvailable = $request->QuantityAvailable;
+        $product->CategoryID = $request->CategoryID;
+        $product->AdminID = $request->AdminID;
+        $product->IsCustomizable = $request->IsCustomizable;
+        $product->HasNutritionalInfo = $request->HasNutritionalInfo;
+        $product->vendor = $request->vendor;
+
+        if ($request->hasFile('image')) {
+            // Delete the old image if exists
+            if ($product->image) {
+                \Storage::delete('public/' . $product->image);
+            }
+
+            // Store the uploaded image in the 'public/images/dashboard/products/sweets' directory
+            $path = $request->file('image')->store('dashboard/products/sweets', 'public');
+            $product->image = $path;
+        }
+
+        $product->save();
+
+        return response()->json(['status' => true, 'message' => 'Product updated successfully']);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::error('Validation Errors: ', $e->errors());
+        return response()->json(['status' => false, 'errors' => $e->errors()], 422);
+    }
+}
+
+
 
 }

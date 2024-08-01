@@ -49,11 +49,20 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify');
 Route::post('/email/resend', [VerificationController::class, 'resend'])->name('verification.resend');
+
 // Ensure API routes are protected
+// Route::middleware('auth:api')->group(function () {
+//     Route::apiResource('/products', ProductController::class);
+//     Route::apiResource('/productcategories', ProductCategoryController::class);
+// });
 Route::middleware('auth:api')->group(function () {
-    Route::apiResource('/products', ProductController::class);
-    Route::apiResource('/productcategories', ProductCategoryController::class);
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{id}', [ProductController::class, 'update']);
+    // Route::put('/updatesweet/{id}', [ProductController::class, 'update']);
+    Route::get('/products/{id}', [ProductController::class, 'show']);
 });
+
 
 
 // Protect admin routes with both auth and admin middleware

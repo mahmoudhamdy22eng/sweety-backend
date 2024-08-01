@@ -12,27 +12,48 @@ class LoginController extends Controller
 {
     public function login(Request $request)
     {
+        // Validate the incoming request
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string|min:8',
             'remember_me' => 'boolean'
         ]);
 
+        // Retrieve user by email
         $user = User::where('email', $request->email)->first();
 
+        // Check if user exists and password matches
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json(['status' => false, 'message' => 'Invalid credentials'], 401);
         }
 
+        // Create access token for user
         $token = $user->createToken('authToken')->accessToken;
-        // $token = $user->createToken('authToken',['user_type' => $user->user_type])->accessToken;
 
-        return response()->json(['token' => $token, 'user' => $user], 200);
+        // Prepare user data to return
+        $userData = [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'user_type' => $user->user_type,
+        ];
+
+        // Check if user is an admin
+        $isAdmin = ($user->user_type === 'admin'); // Adjust condition as needed
+
+        // Add additional information if user is admin
+        $userData['is_admin'] = $isAdmin;
+
+        // Return response with token and user data
+        return response()->json(['status' => true, 'token' => $token, 'user' => $userData], 200);
     }
 
     public function logout(Request $request)
     {
+        // Revoke user's token
         $request->user()->token()->revoke();
+
         return response()->json(['message' => 'Successfully logged out'], 200);
     }
 }
