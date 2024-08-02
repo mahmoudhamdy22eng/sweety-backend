@@ -31,7 +31,7 @@ class ProductController extends Controller
                 'HasNutritionalInfo' => $product->HasNutritionalInfo,
                 'image' => $product->image,
                 'vendor' => $product->vendor,
-                'is_deleted' => $product->is_deleted
+                'is_deleted' => $product->is_deleted == 0 ? true : false,
             ];
         });
 
@@ -119,18 +119,6 @@ public function update(Request $request, $id)
     if (!$product) {
         return response()->json(['status' => false, 'message' => 'Product not found'], 404);
     }
-    
-    // echo $product;
-    // echo $request->name;
-    // echo $request->description;
-    // echo $request->price;
-    // echo $request->QuantityAvailable;
-    // echo $request->CategoryID;
-    // echo $request->AdminID;
-    // echo $request->IsCustomizable;
-    // echo $request->HasNutritionalInfo;
-    // echo $request->vendor;
-    // echo "\n test";
     try {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -174,7 +162,5 @@ public function update(Request $request, $id)
         return response()->json(['status' => false, 'errors' => $e->errors()], 422);
     }
 }
-
-
 
 }

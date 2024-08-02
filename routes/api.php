@@ -9,6 +9,33 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\VerificationController;
+
+use Laravel\Passport\Http\Controllers\AccessTokenController;
+use Laravel\Passport\Http\Controllers\AuthorizationController;
+use Laravel\Passport\Http\Controllers\ApproveAuthorizationController;
+use Laravel\Passport\Http\Controllers\DenyAuthorizationController;
+use Laravel\Passport\Http\Controllers\TransientTokenController;
+use Laravel\Passport\Http\Controllers\PersonalAccessTokenController;
+
+use App\Http\Controllers\CartController;
+
+Route::group(['middleware' => ['api']], function () {
+    // Authorization Routes
+    Route::get('/oauth/authorize', [AuthorizationController::class, 'authorize'])->middleware(['web', 'auth']);
+    Route::post('/oauth/authorize', [AuthorizationController::class, 'approve'])->middleware(['web', 'auth']);
+    Route::delete('/oauth/authorize', [AuthorizationController::class, 'deny'])->middleware(['web', 'auth']);
+
+    // Token Routes
+    Route::post('/oauth/token', [AccessTokenController::class, 'issueToken']);
+    Route::post('/oauth/token/refresh', [TransientTokenController::class, 'refresh']);
+
+    // Personal Access Token Routes
+    Route::post('/oauth/personal-access-tokens', [PersonalAccessTokenController::class, 'store'])->middleware('auth:api');
+    Route::get('/oauth/personal-access-tokens', [PersonalAccessTokenController::class, 'index'])->middleware('auth:api');
+    Route::delete('/oauth/personal-access-tokens/{tokenId}', [PersonalAccessTokenController::class, 'destroy'])->middleware('auth:api');
+});
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -50,13 +77,23 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])->name('verification.verify');
 Route::post('/email/resend', [VerificationController::class, 'resend'])->name('verification.resend');
 
+Route::middleware('auth:api')->group(function () {
+});
+
+Route::post('/cart/add', [CartController::class, 'addToCart']);
+Route::get('/cart', [CartController::class, 'getCartItems']);
+Route::patch('/cart/update', [CartController::class, 'updateQuantity']);
+Route::delete('/cart/remove/{productId}', [CartController::class, 'removeFromCart']);
+Route::delete('/cart/clear', [CartController::class, 'clearCart']);
+
 // Ensure API routes are protected
 // Route::middleware('auth:api')->group(function () {
 //     Route::apiResource('/products', ProductController::class);
 //     Route::apiResource('/productcategories', ProductCategoryController::class);
 // });
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/productcategories', [ProductCategoryController::class, 'index']);
 Route::middleware('auth:api')->group(function () {
-    Route::get('/products', [ProductController::class, 'index']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     // Route::put('/updatesweet/{id}', [ProductController::class, 'update']);
