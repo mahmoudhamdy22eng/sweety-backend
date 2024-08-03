@@ -22,8 +22,8 @@ class LoginController extends Controller
         // Retrieve user by email
         $user = User::where('email', $request->email)->first();
 
-        // Check if user exists and password matches
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        // Check if user exists, password matches, and user is not deleted
+        if (!$user || !Hash::check($request->password, $user->password) || $user->is_deleted) {
             return response()->json(['status' => false, 'message' => 'Invalid credentials'], 401);
         }
 
@@ -40,7 +40,7 @@ class LoginController extends Controller
         ];
 
         // Check if user is an admin
-        $isAdmin = ($user->user_type === 'admin'); // Adjust condition as needed
+        $isAdmin = ($user->user_type === 'admin');
 
         // Add additional information if user is admin
         $userData['is_admin'] = $isAdmin;

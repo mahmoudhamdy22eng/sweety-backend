@@ -111,5 +111,46 @@ class CartController extends Controller
 
         return response()->json(['message' => 'Cart cleared'], 200);
     }
+
+
+    public function getCartTotal()
+{
+    $cartItems = Cart::with('product')
+        ->where('user_id', Auth::id())
+        ->get();
+
+    $total = $cartItems->reduce(function ($carry, $item) {
+        return $carry + ($item->product->price * $item->quantity);
+    }, 0);
+
+    return response()->json(['total' => $total]);
+}
+
+
+public function getCartItemsWithTotal()
+{
+    $cartItems = Cart::with('product')
+        ->where('user_id', Auth::id())
+        ->get();
+
+    $total = $cartItems->reduce(function ($carry, $item) {
+        return $carry + ($item->product->price * $item->quantity);
+    }, 0);
+
+    // Format the cart items to include product details
+    $cartItems = $cartItems->map(function ($cartItem) {
+        return [
+            'id' => $cartItem->id,
+            'product_id' => $cartItem->product_id,
+            'product_name' => $cartItem->product->name,
+            'price' => $cartItem->product->price,
+            'quantity' => $cartItem->quantity,
+        ];
+    });
+
+    return response()->json(['cartItems' => $cartItems, 'total' => $total]);
+}
+
+
 }
 

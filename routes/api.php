@@ -18,6 +18,9 @@ use Laravel\Passport\Http\Controllers\TransientTokenController;
 use Laravel\Passport\Http\Controllers\PersonalAccessTokenController;
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+
+use App\Http\Controllers\adminController;
 
 Route::group(['middleware' => ['api']], function () {
     // Authorization Routes
@@ -69,8 +72,24 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    Route::put('/user', [UserController::class, 'update']);
+    
     Route::post('logout', [LoginController::class, 'logout']);
+
+    
+
+    Route::apiResource('admins', adminController::class);
+    Route::post('admins/restore/{id}', [AdminController::class, 'restore']);
 });
+    // Public routes
+    Route::put('/users/{id}', [UserController::class, 'update']); // Update user
+    Route::delete('/users/{id}', [UserController::class, 'destroy']); // Delete user
+    Route::put('/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+    Route::post('/users', [UserController::class, 'store']); // Add user
+    Route::get('/users', [UserController::class, 'index']); // Get all users
+    Route::get('/users/{id}', [UserController::class, 'show']); // Get specific user
+
+
 
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
@@ -85,6 +104,15 @@ Route::get('/cart', [CartController::class, 'getCartItems']);
 Route::patch('/cart/update', [CartController::class, 'updateQuantity']);
 Route::delete('/cart/remove/{productId}', [CartController::class, 'removeFromCart']);
 Route::delete('/cart/clear', [CartController::class, 'clearCart']);
+
+Route::post('/checkout/order', [CheckoutController::class, 'createOrder']);
+Route::get('/checkout/shipping', [CheckoutController::class, 'getShippingInfo']);
+Route::post('/checkout/shipping', [CheckoutController::class, 'updateShippingInfo']);
+Route::get('/checkout/delivery-method', [CheckoutController::class, 'getDeliveryMethod']);
+Route::post('/checkout/delivery-method', [CheckoutController::class, 'updateDeliveryMethod']);
+Route::get('/checkout/payment-method', [CheckoutController::class, 'getPaymentMethod']);
+Route::post('/checkout/payment-method', [CheckoutController::class, 'updatePaymentMethod']);
+
 
 // Ensure API routes are protected
 // Route::middleware('auth:api')->group(function () {
